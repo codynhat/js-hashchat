@@ -1,15 +1,14 @@
 import { ServiceResponse } from "../service-response";
-import { AuthService } from "./auth.service";
+import { AuthSession, AuthService } from "./auth.service";
 import LitJsSdk from "lit-js-sdk";
 import { AccountId } from "caip";
 import { getChainFromAccountId } from "../../utils";
 import { ApiServiceImpl } from "../core/api.service.impl";
 
 export class AuthServiceImpl extends ApiServiceImpl implements AuthService {
-  accountId?: AccountId;
-  private litToken?: string;
+  authSession?: AuthSession;
 
-  async connect(): Promise<ServiceResponse<AccountId>> {
+  async connect(): Promise<ServiceResponse<AuthSession>> {
     try {
       const { web3, account } = await LitJsSdk.connectWeb3();
       const resp = await web3.getNetwork();
@@ -28,12 +27,14 @@ export class AuthServiceImpl extends ApiServiceImpl implements AuthService {
         address: account,
       });
 
-      this.litToken = await this.getLitToken(accountId);
-      this.accountId = accountId;
+      this.authSession = {
+        accessToken: await this.getLitToken(accountId),
+        accountId: accountId,
+      };
 
-      return this.success<AccountId>(accountId);
+      return this.success<AuthSession>(this.authSession);
     } catch (e) {
-      return this.error<AccountId>(e);
+      return this.error<AuthSession>(e);
     }
   }
 
