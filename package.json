@@ -1,0 +1,20 @@
+{
+  "name": "js-hashchat",
+  "version": "0.1.0",
+  "description": "JS SDK for Hashchat",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "lint": "eslint"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "@typescript-eslint/eslint-plugin": "^5.29.0",
+    "eslint": "^8.18.0",
+    "prettier": "^2.7.1",
+    "ts-node": "^10.8.1",
+    "typescript": "^4.7.4"
+  }
+}
