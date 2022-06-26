@@ -16,9 +16,7 @@ export class ChatServiceImpl extends ApiServiceImpl implements ChatService {
         `${this.urls.worker}/token/${authSession.accountId.toString()}`,
         undefined,
         {
-          headers: {
-            "x-lit-token": authSession.accessToken,
-          },
+          "x-lit-token": authSession.accessToken,
         }
       );
 
