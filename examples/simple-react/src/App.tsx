@@ -5,6 +5,8 @@ import { useServices } from "./useServices";
 function App() {
   const { authService, chatService } = useServices();
 
+  console.log(authService.authSession);
+
   async function login() {
     const response = await authService.connect();
     if (response.data) {
