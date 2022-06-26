@@ -1,12 +1,16 @@
 import { ServiceResponse } from "../service-response";
 import { AuthSession, AuthService } from "./auth.service";
 import LitJsSdk from "lit-js-sdk";
+import { signMessage } from "lit-js-sdk/src/utils/eth";
 import { AccountId } from "caip";
 import { getChainFromAccountId } from "../../utils";
 import { ApiServiceImpl } from "../core/api.service.impl";
-import { EthereumAuthProvider } from "@ceramicnetwork/blockchain-utils-linking";
 import { createDIDKey } from "@glazed/did-session";
-import { Cacao, SiweMessage } from "ceramic-cacao";
+import { Cacao } from "ceramic-cacao";
+import { Web3Provider } from "@ethersproject/providers";
+import Web3Modal from "web3modal";
+import { SiweMessage } from "lit-siwe";
+import { DID } from "dids";
 
 export class AuthServiceImpl extends ApiServiceImpl implements AuthService {
   authSession?: AuthSession;
@@ -21,9 +25,13 @@ export class AuthServiceImpl extends ApiServiceImpl implements AuthService {
     try {
       await this.litClient.connect();
 
-      const { web3, account } = await LitJsSdk.connectWeb3();
-      const resp = await web3.getNetwork();
-      const chainId: number = resp.chainId;
+      const web3Modal = new Web3Modal();
+      const instance = await web3Modal.connect();
+      const web3Provider = new Web3Provider(instance);
+
+      const account = await web3Provider.getSigner().getAddress();
+      const network = await web3Provider.getNetwork();
+      const chainId: number = network.chainId;
       const accountId = new AccountId({
         chainId: {
           namespace: "eip155",
@@ -32,19 +40,18 @@ export class AuthServiceImpl extends ApiServiceImpl implements AuthService {
         address: account,
       });
 
-      const ethereumAuthProvider = new EthereumAuthProvider(web3, account);
       const didKey = await createDIDKey();
-      const cacao = await ethereumAuthProvider.requestCapability(didKey.id, []);
-      console.log("CACAO");
-      console.log(cacao);
-      const didWithCap = didKey.withCapability(cacao);
-      await didWithCap.authenticate();
+      const siweMessage = await this.generateSiweMessage(
+        web3Provider,
+        accountId,
+        didKey
+      );
 
       this.authSession = {
-        accessToken: await this.getLitToken(accountId, cacao),
+        accessToken: await this.getLitToken(accountId, siweMessage),
         accountId: accountId,
-        did: didWithCap,
-        cacao: cacao,
+        did: didKey,
+        // cacao: cacao,
       };
 
       return this.success<AuthSession>(this.authSession);
@@ -53,15 +60,42 @@ export class AuthServiceImpl extends ApiServiceImpl implements AuthService {
     }
   }
 
-  private async getLitToken(accountId: AccountId, cacao: Cacao) {
+  private async generateSiweMessage(
+    provider: Web3Provider,
+    accountId: AccountId,
+    sessionDID: DID
+  ) {
+    const preparedMessage = {
+      domain: globalThis.location.host,
+      address: accountId.address,
+      uri: sessionDID.id,
+      version: "1",
+      chainId: Number(accountId.chainId.reference),
+    };
+
+    const message = new SiweMessage(preparedMessage);
+
+    const body = message.prepareMessage();
+
+    const signedResult = await signMessage({
+      body,
+      provider,
+      account: accountId.address,
+    });
+
+    message.signature = signedResult.signature;
+    return message;
+  }
+
+  private async getLitToken(accountId: AccountId, siweMessage: SiweMessage) {
     const litChain = getChainFromAccountId(accountId);
 
-    const siweMessage = SiweMessage.fromCacao(cacao);
-    console.log(siweMessage);
-
-    const authSig = await LitJsSdk.checkAndSignAuthMessage({
-      chain: litChain,
-    });
+    const authSig = {
+      sig: siweMessage.signature,
+      derivedVia: "web3.eth.personal.sign",
+      signedMessage: siweMessage.prepareMessage(),
+      address: siweMessage.address,
+    };
     console.log(authSig);
 
     const accessControlConditions = this.generateAccessControlCondition(

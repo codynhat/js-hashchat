@@ -7,7 +7,7 @@ export type AuthSession = {
   accountId: AccountId;
   accessToken: string;
   did: DID;
-  cacao: Cacao;
+  // cacao: Cacao;
 };
 
 export interface AuthService {
