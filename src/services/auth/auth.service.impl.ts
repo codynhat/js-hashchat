@@ -47,11 +47,15 @@ export class AuthServiceImpl extends ApiServiceImpl implements AuthService {
         didKey
       );
 
+      const cacao = cacaoFromSiweMessage(siweMessage);
+      const didKeyWithCap = didKey.withCapability(cacao);
+      await didKeyWithCap.authenticate();
+
       this.authSession = {
         accessToken: await this.getLitToken(accountId, siweMessage),
         accountId: accountId,
-        did: didKey,
-        // cacao: cacao,
+        did: didKeyWithCap,
+        cacao: cacao,
       };
 
       return this.success<AuthSession>(this.authSession);
@@ -96,7 +100,6 @@ export class AuthServiceImpl extends ApiServiceImpl implements AuthService {
       signedMessage: siweMessage.prepareMessage(),
       address: siweMessage.address,
     };
-    console.log(authSig);
 
     const accessControlConditions = this.generateAccessControlCondition(
       accountId,
@@ -162,4 +165,49 @@ export class AuthServiceImpl extends ApiServiceImpl implements AuthService {
   private clearKeys() {
     localStorage.clear();
   }
+}
+
+function cacaoFromSiweMessage(siweMessage: SiweMessage): Cacao {
+  const cacao: Cacao = {
+    h: {
+      t: "eip4361",
+    },
+    p: {
+      domain: siweMessage.domain,
+      iat: siweMessage.issuedAt,
+      iss: `did:pkh:eip155:${siweMessage.chainId}:${siweMessage.address}`,
+      aud: siweMessage.uri,
+      version: siweMessage.version,
+      nonce: siweMessage.nonce,
+    },
+  };
+
+  if (siweMessage.signature) {
+    cacao.s = {
+      t: "eip191",
+      s: siweMessage.signature,
+    };
+  }
+
+  if (siweMessage.notBefore) {
+    cacao.p.nbf = siweMessage.notBefore;
+  }
+
+  if (siweMessage.expirationTime) {
+    cacao.p.exp = siweMessage.expirationTime;
+  }
+
+  if (siweMessage.statement) {
+    cacao.p.statement = siweMessage.statement;
+  }
+
+  if (siweMessage.requestId) {
+    cacao.p.requestId = siweMessage.requestId;
+  }
+
+  if (siweMessage.resources) {
+    cacao.p.resources = siweMessage.resources;
+  }
+
+  return cacao;
 }
