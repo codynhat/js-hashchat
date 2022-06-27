@@ -2,7 +2,6 @@ import { ServiceResponse } from "../service-response";
 import { AuthSession } from "../auth/auth.service";
 import { ChatMessage } from "../../models/chat-message.model";
 import { JWMPayload } from "../../models/dtos/jwm-payload.dto";
-import { Channel } from "stream-chat";
 
 export type UserId = string;
 

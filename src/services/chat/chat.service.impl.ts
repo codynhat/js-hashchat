@@ -4,12 +4,11 @@ import { ChatService, UserId } from "./chat.service";
 import { AuthSession } from "../auth/auth.service";
 import { ChatMessage } from "../../models/chat-message.model";
 import { JWMPayload } from "../../models/dtos/jwm-payload.dto";
-import { StreamChat, Channel } from "stream-chat";
+import { StreamChat } from "stream-chat";
 
 export class ChatServiceImpl extends ApiServiceImpl implements ChatService {
   userId?: UserId;
   private userToken?: string;
-  private authSession?: AuthSession;
   private streamClient: StreamChat;
 
   constructor(apiKey: string) {
@@ -34,7 +33,6 @@ export class ChatServiceImpl extends ApiServiceImpl implements ChatService {
 
       this.userId = response.data["userId"];
       this.userToken = response.data["token"];
-      this.authSession = authSession;
 
       await this.streamClient.connectUser(
         {
