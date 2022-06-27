@@ -1,6 +1,7 @@
 import React, { useContext } from "react";
-import { Services, services } from "js-hashchat";
+import { Services } from "js-hashchat";
 
+const services = new Services(process.env.REACT_APP_STREAM_KEY!);
 export const ServicesContext = React.createContext<Services>(services);
 
 export const ServicesProvider = ({

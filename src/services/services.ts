@@ -5,7 +5,9 @@ import { ChatServiceImpl } from "./chat/chat.service.impl";
 
 export class Services {
   authService: AuthService = new AuthServiceImpl();
-  chatService: ChatService = new ChatServiceImpl();
-}
+  chatService: ChatService;
 
-export const services = new Services();
+  constructor(chatServiceApiKey: string) {
+    this.chatService = new ChatServiceImpl(chatServiceApiKey);
+  }
+}

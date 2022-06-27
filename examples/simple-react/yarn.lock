@@ -5675,10 +5675,15 @@
     "axios" "^0.27.2"
     "caip" "^1.1.0"
     "ceramic-cacao" "^1.1.1"
+    "did-jwt" "^6.2.0"
     "dids" "^3.2.0"
     "key-did-provider-ed25519" "^2.0.0"
     "key-did-resolver" "^2.0.4"
     "lit-js-sdk" "^1.1.192"
+    "lodash" "^4.17.21"
+    "mobx" "^6.6.0"
+    "stream-chat" "^6.7.0"
+    "web3modal" "^1.9.8"
 
 "js-tokens@^3.0.0 || ^4.0.0", "js-tokens@^4.0.0":
   "integrity" "sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ=="
