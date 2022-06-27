@@ -1,14 +1,14 @@
 import { Entity } from "./core/entity";
-import { HashchatStreamMessage } from "./dtos/hashchat-stream-message.dto";
+import { JWMPayload } from "./dtos/jwm-payload.dto";
 
 enum MessageType {
   MESSAGE = "message",
   UNKNOWN = "unknown",
 }
 
-export class ChatMessage extends Entity<HashchatStreamMessage> {
+export class ChatMessage extends Entity<JWMPayload> {
   get messageType(): MessageType {
-    switch (this.dto.hashchatMessage.type) {
+    switch (this.dto.type) {
       case "message":
         return MessageType.MESSAGE;
       default:
@@ -17,38 +17,34 @@ export class ChatMessage extends Entity<HashchatStreamMessage> {
   }
 
   get content(): string | undefined {
-    return this.dto.hashchatMessage.body?.content;
+    return this.dto.body?.content;
   }
 
   get to(): string | undefined {
-    return this.dto.hashchatMessage.to;
+    return this.dto.to;
   }
 
   get from(): string | undefined {
-    return this.dto.hashchatMessage.from;
+    return this.dto.from;
   }
 
   get threadId(): string | undefined {
-    return this.dto.hashchatMessage.thread_id;
+    return this.dto.thread_id;
   }
 
   get createdTime(): Date | undefined {
-    return this.dto.hashchatMessage.created_time
-      ? new Date(this.dto.hashchatMessage.created_time)
-      : undefined;
+    return this.dto.created_time ? new Date(this.dto.created_time) : undefined;
   }
 
   get expiresTime(): Date | undefined {
-    return this.dto.hashchatMessage.expires_time
-      ? new Date(this.dto.hashchatMessage.expires_time)
-      : undefined;
+    return this.dto.expires_time ? new Date(this.dto.expires_time) : undefined;
   }
 
   get replyUrl(): string | undefined {
-    return this.dto.hashchatMessage.reply_url;
+    return this.dto.reply_url;
   }
 
   get replyTo(): string | undefined {
-    return this.dto.hashchatMessage.reply_to;
+    return this.dto.reply_to;
   }
 }
