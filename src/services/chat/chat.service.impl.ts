@@ -8,6 +8,8 @@ import { StreamChat } from "stream-chat";
 import { SignerService } from "../auth/signer.service";
 import { EncrypterService } from "../auth/encrypter.service";
 import { HashchatStreamMessage } from "../../models/dtos/hashchat-stream-message.dto";
+import { JWE } from "did-jwt";
+import { SignedChatMessage } from "../../models/dtos/signed-chat-message.dto";
 
 export class ChatServiceImpl extends ApiServiceImpl implements ChatService {
   userId?: UserId;
@@ -91,6 +93,41 @@ export class ChatServiceImpl extends ApiServiceImpl implements ChatService {
       };
 
       await channel.sendMessage({ id: messageId, ...streamMessage });
+      return this.success<ChatMessage>(chatMessage);
+    } catch (e) {
+      return this.error<ChatMessage>(e);
+    }
+  }
+
+  async lastMessage(): Promise<ServiceResponse<ChatMessage>> {
+    try {
+      // FIXME: Just using a single test channel for now
+      const channel = this.streamClient.channel(
+        "messaging",
+        "test-channel-codynhat"
+      );
+      await channel.watch();
+
+      const lastMessage: HashchatStreamMessage = {
+        hashchatMessage: channel.lastMessage().hashchatMessage as JWE,
+      };
+
+      const decryptedMessageResult = await this.encrypterService.decryptMessage(
+        channel,
+        lastMessage.hashchatMessage
+      );
+      if (!decryptedMessageResult.data) {
+        return this.error<ChatMessage>(decryptedMessageResult.error);
+      }
+      const decryptedMessage = decryptedMessageResult.data as SignedChatMessage;
+      const verifiedMessageResult = await this.signerService.verifyMessage(
+        decryptedMessage
+      );
+      if (!verifiedMessageResult.data) {
+        return this.error<ChatMessage>(verifiedMessageResult.error);
+      }
+
+      const chatMessage = new ChatMessage(verifiedMessageResult.data);
       return this.success<ChatMessage>(chatMessage);
     } catch (e) {
       return this.error<ChatMessage>(e);

@@ -9,7 +9,10 @@ function App() {
     AuthSession | undefined
   >();
   const [messageText, setMessageText] = React.useState<string | undefined>();
-  const [lastMessage, setLastMessage] = React.useState<
+  const [lastSentMessage, setLastSentMessage] = React.useState<
+    ChatMessage | undefined
+  >();
+  const [lastReceivedMessage, setLastReceivedMessage] = React.useState<
     ChatMessage | undefined
   >();
 
@@ -19,6 +22,9 @@ function App() {
       await chatService.authenticate(response.data);
       setAuthSession(response.data);
     }
+
+    const lastMessageResult = await chatService.lastMessage();
+    setLastReceivedMessage(lastMessageResult.data);
   }
 
   async function sendMessage(text: string) {
@@ -29,7 +35,7 @@ function App() {
     };
     const response = await chatService.send(payload);
     if (response.data) {
-      setLastMessage(response.data);
+      setLastSentMessage(response.data);
     }
   }
 
@@ -51,7 +57,18 @@ function App() {
             >
               Send
             </button>
-            {lastMessage ? <p>{JSON.stringify(lastMessage)}</p> : null}
+            {lastReceivedMessage ? (
+              <>
+                <h2>Last Received Message:</h2>{" "}
+                <p>{JSON.stringify(lastReceivedMessage)}</p>
+              </>
+            ) : null}
+            {lastSentMessage ? (
+              <>
+                <h2>Last Sent Message:</h2>{" "}
+                <p>{JSON.stringify(lastSentMessage)}</p>
+              </>
+            ) : null}
           </>
         ) : (
           <button onClick={() => login()}>Connect</button>

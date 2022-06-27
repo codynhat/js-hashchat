@@ -86,9 +86,13 @@ export class EncrypterServiceImpl
         new Error("Encrypter not authenticated. Call authenticate() first")
       );
     }
-    const { symmetricKey } = await this.fetchKeyFromKid(channel, "", message);
-    const decryptedMsg = await this.decrypt(message, symmetricKey);
-    return JSON.parse(decryptedMsg.message);
+    try {
+      const { symmetricKey } = await this.fetchKeyFromKid(channel, "", message);
+      const decryptedMsg = await this.decrypt(message, symmetricKey);
+      return this.success<Record<string, any>>(decryptedMsg);
+    } catch (e) {
+      return this.error<Record<string, any>>(e);
+    }
   }
 
   private async encrypt(

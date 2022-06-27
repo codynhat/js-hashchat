@@ -9,4 +9,5 @@ export interface ChatService {
   userId?: UserId;
   authenticate(authSession: AuthSession): Promise<ServiceResponse<UserId>>;
   send(payload: JWMPayload): Promise<ServiceResponse<ChatMessage>>;
+  lastMessage(): Promise<ServiceResponse<ChatMessage>>;
 }
