@@ -62,7 +62,8 @@ export class ChatServiceImpl extends ApiServiceImpl implements ChatService {
 
   async send(payload: JWMPayload): Promise<ServiceResponse<ChatMessage>> {
     try {
-      payload.id = payload.id ?? crypto.randomUUID();
+      const messageId = payload.id ?? crypto.randomUUID();
+      payload.id = messageId;
 
       const chatMessage = new ChatMessage(payload);
 
@@ -89,7 +90,7 @@ export class ChatServiceImpl extends ApiServiceImpl implements ChatService {
         hashchatMessage: encryptedMessageResult.data,
       };
 
-      await channel.sendMessage({ ...streamMessage });
+      await channel.sendMessage({ id: messageId, ...streamMessage });
       return this.success<ChatMessage>(chatMessage);
     } catch (e) {
       return this.error<ChatMessage>(e);
