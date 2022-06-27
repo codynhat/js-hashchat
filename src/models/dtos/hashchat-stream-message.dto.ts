@@ -1,5 +1,6 @@
-import { JWMPayload } from "./jwm-payload.dto";
+import { JWE } from "did-jwt";
 
+/* Hashchat specific message stored in Stream */
 export interface HashchatStreamMessage {
-  hashchatMessage: JWMPayload;
+  hashchatMessage: JWE;
 }

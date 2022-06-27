@@ -1,3 +1,4 @@
+/* Payload of plaintext message */
 export interface JWMPayload {
   id?: string;
   type?: string;
